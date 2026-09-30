@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="100" fill="url(#brandGrad)" />
+  <circle cx="256" cy="256" r="180" fill="#065f46" opacity="0.6" />
+  <!-- Letter S stylized with trade tools / wrench / checkmark -->
+  <path d="M190 320 L256 190 L322 320" stroke="#fde047" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M215 270 L297 270" stroke="#fde047" stroke-width="26" stroke-linecap="round"/>
+  <circle cx="256" cy="140" r="26" fill="#eab308" />
+  <!-- Verification Shield Badge -->
+  <circle cx="360" cy="360" r="54" fill="#0284c7" />
+  <path d="M340 360 L354 374 L380 348" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

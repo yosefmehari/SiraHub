@@ -1,0 +1,133 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CLIENT
+  TECHNICIAN
+  ADMIN
+}
+
+enum JobStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  HELD_IN_ESCROW
+  RELEASED
+  REFUNDED
+}
+
+model User {
+  id            String             @id @default(uuid())
+  name          String
+  phone         String             @unique
+  role          Role               @default(CLIENT)
+  subCity       String
+  woreda        String?
+  avatarUrl     String?
+  isVerified    Boolean            @default(false)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  
+  techProfile   TechnicianProfile?
+  clientJobs    JobRequest[]       @relation("ClientJobs")
+  techJobs      JobRequest[]       @relation("TechJobs")
+  reviewsGiven  Review[]           @relation("ReviewsGiven")
+}
+
+model Category {
+  id          String                      @id @default(uuid())
+  nameEn      String
+  nameAm      String
+  nameTi      String
+  slug        String                      @unique
+  iconName    String
+  techProfiles TechnicianProfileCategory[]
+  jobs        JobRequest[]
+}
+
+model TechnicianProfile {
+  id                 String                      @id @default(uuid())
+  userId             String                      @unique
+  user               User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                String?
+  hourlyRate         Float
+  yearsExperience    Int
+  idDocumentUrl      String
+  isAvailable        Boolean                     @default(true)
+  ratingAverage      Float                       @default(0.0)
+  totalJobs          Int                         @default(0)
+  categories         TechnicianProfileCategory[]
+  portfolioImages    String[]
+  reviewsReceived    Review[]
+}
+
+model TechnicianProfileCategory {
+  technicianId String
+  categoryId   String
+  technician   TechnicianProfile @relation(fields: [technicianId], references: [id], onDelete: Cascade)
+  category     Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([technicianId, categoryId])
+}
+
+model JobRequest {
+  id              String        @id @default(uuid())
+  clientId        String
+  client          User          @relation("ClientJobs", fields: [clientId], references: [id])
+  technicianId    String
+  technician      User          @relation("TechJobs", fields: [technicianId], references: [id])
+  categoryId      String
+  category        Category      @relation(fields: [categoryId], references: [id])
+  
+  title           String
+  description     String
+  issuePhotoUrl   String?
+  address         String
+  subCity         String
+  status          JobStatus     @default(PENDING)
+  agreedPrice     Float
+  paymentStatus   PaymentStatus @default(UNPAID)
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  transaction     Transaction?
+  review          Review?
+}
+
+model Review {
+  id           String            @id @default(uuid())
+  jobId        String            @unique
+  job          JobRequest        @relation(fields: [jobId], references: [id])
+  clientId     String
+  client       User              @relation("ReviewsGiven", fields: [clientId], references: [id])
+  technicianId String
+  technician   TechnicianProfile @relation(fields: [technicianId], references: [id])
+  rating       Int
+  comment      String?
+  createdAt    DateTime          @default(now())
+}
+
+model Transaction {
+  id               String        @id @default(uuid())
+  jobId            String        @unique
+  job              JobRequest    @relation(fields: [jobId], references: [id])
+  amount           Float
+  commissionAmount Float         // 10% Platform fee
+  payoutAmount     Float         // 90% to Technician
+  paymentGateway   String        // "CHAPA" or "TELEBIRR"
+  txRef            String        @unique
+  status           PaymentStatus @default(UNPAID)
+  createdAt        DateTime      @default(now())
+}
